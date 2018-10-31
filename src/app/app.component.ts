@@ -6,6 +6,7 @@ import { AngularFireDatabase } from '@angular/fire/database';
 import {FirebaseListObservable, FirebaseObjectObservable} from '@angular/fire/database-deprecated';
 import { Apparel } from './apparel/apparel.model';
 import { filter } from 'rxjs/operators';
+import { Key } from 'protractor';
 
 @Component({
   selector: 'app-root',
@@ -19,25 +20,40 @@ export class AppComponent {
 
   constructor(private db: AngularFireDatabase){}
 
-  get(path): Observable<any[]> {
-    return this.db.list(path).valueChanges();
-  }
+  // get(path): Observable<any[]> {
+  //   return this.db.list(path).valueChanges();
+  // }
 
 
   onSizeChange(event){
-    this.conditions.push({key: "shape", value: event.target.value});
+    var key = event.target.parentElement.parentElement.parentElement.id;
+    if(event.target.checked){
+      this.conditions.push({key: key, value: event.target.value});
+    }else{
+      var index = this.conditions.findIndex(x => x.key == key && x.value == event.target.value);
+      this.conditions.splice(index, 1);
+    }
     this.onChange();   
   }
 
   onDesignerChange(event){
-    if(event.target.value != ""){
-      this.conditions.push({key: "designer", value: event.target.value});
-      this.onChange();     
+    var index = this.conditions.findIndex(x => x.key == event.target.id);
+  
+    if(index != -1 && event.target.value != ""){//agar filtere designer ghablan vojood dashte bashe va ye filtere jadid entekhab beshe
+      this.conditions.splice(index, 1);
+      this.conditions.push({key: event.target.id, value: event.target.value});
+    }else if(index == -1 && event.target.value != ""){//agar filtere designer ghablan vojood nadashte va hala ye filter entekhab beshe
+      this.conditions.push({key: event.target.id, value: event.target.value});
+    }else if(index != -1 && event.target.value == ""){//agar filtere designer ghablan vojood dashte bashe va alan bardashte beshe
+      this.conditions.splice(index, 1);
     }
+
+    this.onChange();
   }
 
   onChange(){
-    //this.list.pipe(filter()).subscribe();
+    console.log(this.conditions);
+    //this.list.pipe().subscribe();
   }
 
 }
