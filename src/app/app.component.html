@@ -5,35 +5,35 @@
                   <div id="size">
                       <div class="form-check">
                           <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" (click)="onSizeChange($event)" value="small">small
+                            <input type="checkbox" class="form-check-input" [(ngModel)]="small" (change)="filterBoolean('small', small)">small
                           </label>
                         </div>
                         <div class="form-check">
                           <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" (click)="onSizeChange($event)" value="medium">medium
+                            <input type="checkbox" class="form-check-input" [(ngModel)]="medium" (change)="filterBoolean('medium', medium)">medium
                           </label>
                         </div>
                         <div class="form-check">
                           <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" (click)="onSizeChange($event)" value="large">large
+                            <input type="checkbox" class="form-check-input" [(ngModel)]="large" (change)="filterBoolean('large', large)">large
                           </label>
                         </div>
                   </div>
 
                   <h5 class="mt-2">Designer</h5>
                   <div class="form-group">
-                      <select class="form-control" id="designer" (change)="onDesignerChange($event)">
+                      <select class="form-control" [(ngModel)]="designer" (change)="filterString('designer', designer)">
                         <option></option>
                         <option>Ralph Lauren</option>
                         <option>Gucci</option>
                         <option>Gap</option>
                         <option>Nike</option>
                       </select>
-                    </div>
+                  </div>
         </div>
 
         <div class="col-md-9">
-            <app-apparel *ngFor="let item of list | async" 
+            <app-apparel *ngFor="let item of filteredApparels" 
             [itemElement] = "item">
             </app-apparel>
         </div>

@@ -1,62 +1,82 @@
-import { Component } from '@angular/core';
-//import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Component, OnInit } from '@angular/core';
+import { Observable, zip } from 'rxjs';
 
 import { AngularFireDatabase } from '@angular/fire/database';
 import {FirebaseListObservable, FirebaseObjectObservable} from '@angular/fire/database-deprecated';
 import { Apparel } from './apparel/apparel.model';
-import { filter } from 'rxjs/operators';
-import { Key } from 'protractor';
+import { filter, reduce, map } from 'rxjs/operators';
+import { element } from 'protractor';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
-  //apparelList: FirebaseListObservable<{color: string}[]>; //= this.db.database.list('apparel'); //this.db.collection('/Apparel');//AngularFirestoreCollection<any> = this.db.collection('/Apparel');
-  list: Observable<any[]> = this.db.list('/apparel').valueChanges();//this.get('/apparel'); //this.apparelList.valueChanges();
-  conditions: {key: string, value: string}[] = [];
+export class AppComponent implements OnInit {
 
   constructor(private db: AngularFireDatabase){}
 
-  // get(path): Observable<any[]> {
-  //   return this.db.list(path).valueChanges();
-  // }
+  apparels: any;
+  filteredApparels: any;
 
+  designer: string;
+  small: boolean;
+  medium: boolean;
+  large: boolean;
 
-  onSizeChange(event){
-    var key = event.target.parentElement.parentElement.parentElement.id;
-    if(event.target.checked){
-      this.conditions.push({key: key, value: event.target.value});
-    }else{
-      var index = this.conditions.findIndex(x => x.key == key && x.value == event.target.value);
-      this.conditions.splice(index, 1);
-    }
-    this.onChange();   
+  filters: {key: string, val: any}[] =[];
+
+  ngOnInit(){
+    this.db.list('/apparel').valueChanges().subscribe(apparels => {
+      this.apparels = apparels;
+      this.applyFilters();
+    })
   }
 
-  onDesignerChange(event){
-    var index = this.conditions.findIndex(x => x.key == event.target.id);
-  
-    if(index != -1 && event.target.value != ""){//agar filtere designer ghablan vojood dashte bashe va ye filtere jadid entekhab beshe
-      this.conditions.splice(index, 1);
-      this.conditions.push({key: event.target.id, value: event.target.value});
-    }else if(index == -1 && event.target.value != ""){//agar filtere designer ghablan vojood nadashte va hala ye filter entekhab beshe
-      this.conditions.push({key: event.target.id, value: event.target.value});
-    }else if(index != -1 && event.target.value == ""){//agar filtere designer ghablan vojood dashte bashe va alan bardashte beshe
-      this.conditions.splice(index, 1);
-    }
+  applyFilters(){
 
-    this.onChange();
+    this.filteredApparels = this.apparels;
+    if(this.filters.length != 0){
+      this.filters.forEach(element => {
+
+        if(typeof(element.val) == 'string'){
+            this.filteredApparels = this.filteredApparels.filter(x => x[element.key] == element.val);
+        }else if(typeof(element.val) == 'boolean'){
+          this.filteredApparels = this.filteredApparels.filter(x => x['shape'] == element.key);
+        }
+      });
+    }
   }
 
-  onChange(){
-    console.log(this.conditions);
-    //this.list.pipe().subscribe();
+  filterString(key: string, rule: any) {
+    let index = this.filters.findIndex(i => i.key == key);
+    if(index != -1){
+      this.removeFilter(key);
+    }
+    this.filters.push({
+      key: key,
+      val: rule
+    });
+    this.applyFilters();
+  }
+
+  filterBoolean(key: string, rule: boolean) {
+    if (!rule){
+      this.removeFilter(key);
+    }
+    else {
+      this.filters.push({
+        key: key,
+        val: rule
+      });
+    }
+    this.applyFilters();
+  }
+
+  removeFilter(key: string) {
+    let index = this.filters.findIndex(i => i.key == key);
+    this.filters.splice(index, 1);
   }
 
 }
 
-
-      //this.list = this.db.collection('/Apparel', ref => ref.where(element.key, "==", element.value)).valueChanges();

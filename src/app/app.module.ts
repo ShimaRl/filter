@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import {FormsModule} from '@angular/forms'
 
 import { AppComponent } from './app.component';
 import { ApparelComponent } from './apparel/apparel.component';
@@ -18,6 +19,7 @@ import { AngularFireDatabaseModule } from '@angular/fire/database';
   ],
   imports: [
     BrowserModule,
+    FormsModule,
     AngularFireModule.initializeApp(FirebaseConfig.firebase),
     AngularFirestoreModule,
     AngularFireDatabaseModule
