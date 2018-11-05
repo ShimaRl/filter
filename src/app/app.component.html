@@ -1,35 +1,49 @@
 <div class="container-fluid">
     <div class="row mt-4">
         <div class="col-md-3">
-                <h5>size</h5>
-                  <div id="size">
-                      <div class="form-check">
-                          <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" [(ngModel)]="small" (change)="filterBoolean('small', small)">small
-                          </label>
-                        </div>
-                        <div class="form-check">
-                          <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" [(ngModel)]="medium" (change)="filterBoolean('medium', medium)">medium
-                          </label>
-                        </div>
-                        <div class="form-check">
-                          <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" [(ngModel)]="large" (change)="filterBoolean('large', large)">large
-                          </label>
-                        </div>
-                  </div>
 
-                  <h5 class="mt-2">Designer</h5>
-                  <div class="form-group">
-                      <select class="form-control" [(ngModel)]="designer" (change)="filterString('designer', designer)">
-                        <option></option>
-                        <option>Ralph Lauren</option>
-                        <option>Gucci</option>
-                        <option>Gap</option>
-                        <option>Nike</option>
-                      </select>
-                  </div>
+          <h5>size</h5>
+          <div id="shape">
+              <div class="form-check">
+                  <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" (change)="onCheckboxChanged($event)" value="small">small
+                  </label>
+                </div>
+                <div class="form-check">
+                  <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" (change)="onCheckboxChanged($event)" value="medium">medium
+                  </label>
+                </div>
+                <div class="form-check">
+                  <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" (change)="onCheckboxChanged($event)" value="large">large
+                  </label>
+                </div>
+          </div>
+
+          <h5 class="mt-2">Designer</h5>
+          <div class="form-group">
+              <select class="form-control" id="designer" (change)="onDropdownChanged($event)">
+                <option></option>
+                <option>Ralph Lauren</option>
+                <option>Gucci</option>
+                <option>Gap</option>
+                <option>Nike</option>
+              </select>
+          </div>
+
+          <h5 class="mt-2" id="price">Price</h5>
+          <div class="row">
+            <div class="form-group col-md-4">
+               <input type="number" class="form-control" #min>
+            </div>
+            <div class="form-group col-md-4">
+              <input type="number" class="form-control" #max>
+            </div>
+            <div class="col-md-4">
+              <button type="button" class="btn btn-outline-primary" (click)="onPriceSet(min, max)">set</button>
+            </div>
+          </div>
         </div>
 
         <div class="col-md-9">
@@ -37,6 +51,7 @@
             [itemElement] = "item">
             </app-apparel>
         </div>
+        
     </div>
 </div>
 
