@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { AngularFireDatabase } from '@angular/fire/database';
-import {FirebaseListObservable, FirebaseObjectObservable} from '@angular/fire/database-deprecated';
+import { FirebaseListObservable, FirebaseObjectObservable } from '@angular/fire/database-deprecated';
 import { Apparel } from './apparel/apparel.model';
-import { filter, reduce, map, zip, concat, merge } from 'rxjs/operators';
+import { filter, concat } from 'rxjs/operators';
+import { Router, ActivatedRoute, Params } from '@angular/router';
+import { element } from 'protractor';
 
 @Component({
   selector: 'app-root',
@@ -13,113 +15,157 @@ import { filter, reduce, map, zip, concat, merge } from 'rxjs/operators';
 })
 export class AppComponent implements OnInit {
 
-  constructor(private db: AngularFireDatabase){}
+  constructor(private db: AngularFireDatabase, private router: Router, private route: ActivatedRoute) { }
 
+  // observables
   apparels: any;
   filteredApparels: any;
 
-  filters: {key: string, val: any}[] =[];
+  // filter array
+  sizes = ['small', 'medium' , 'large'];
+designers = ['ralph', 'gap', 'nike', 'gucci'];
+  // filter arrays
+  selectedDesigners: string[] = []; // array of checked disigners
+  selectedSizes: string[] = []; // array of checked sizes
+  selectedMinPrice: number; // min price
+  selectedMaxPrice: number; // max price
 
-  checkboxObservable: any;
-  checkCount: number;
+  // temp number
+  changesNum: number;
 
-  ngOnInit(){
+  ngOnInit() {
+    // fetching data from database
     this.db.list('/apparel').valueChanges().subscribe(apparels => {
       this.apparels = apparels;
-      this.applyFilters();
+      this.getParamsFromUrl();
+      this.search();
     });
-    this.checkCount = 0;
+    this.changesNum = 0;
   }
 
-  onCheckboxChanged(event){
-
-    var key = event.target.parentElement.parentElement.parentElement.id;
-    var value = event.target.value;
-
-    if(!event.target.checked){// age check bardashte shod
-      this.checkCount--;
-      if(this.checkCount != 0){//age hanooz checkboxi vojood dare ke checked hast
-        this.checkboxObservable = this.checkboxObservable.filter(x => x[key] != value);
-      }else{//age hameye checkboxa unchecked hastan
-        this.checkboxObservable = null;
+  getParamsFromUrl() {
+    // reading query parameters from url
+    this.route.queryParamMap.subscribe((params) => {
+      if (params.has('designer')) {
+        this.selectedDesigners = params.get('designer').split(',');
       }
-    }else{//age check gozashte shod
-      this.checkCount++;
-      var o = this.apparels.filter(x => x[key] == value);//filtere kole dadeha bar asase checkboxe check shode     
-      if(this.checkboxObservable != null){//age az ghabl ham check boxe check shodei bood
-        var w =this.checkboxObservable;
-        this.checkboxObservable = this.checkboxObservable.concat(o);//ezafe kardan be ghablia
-      }else{
-        this.checkboxObservable = o;
+      if (params.has('size')) {
+        this.selectedSizes = params.get('size').split(',');
       }
-    }
-    this.applyFilters();
-  }
-
-  onDropdownChanged(event) {
-    var key = event.target.id;
-    var value = event.target.value;
-    
-    if(value != ""){//age ye filter entekhab shod 
-      let index = this.filters.findIndex(i => i.key == key);
-      if(index != -1){//age filtere ba in key az ghabl vojood dasht
-        this.removeFilter(key);
+      if (params.has('minprice')) {
+        this.selectedMinPrice = +params.get('minprice') || 0;
       }
-      this.filters.push({//ezafe kardane filtere jadid be araye filterha
-        key: key,
-        val: value
-      });
-    }else{//age bardashtane filter entekhab shod 
-      this.removeFilter(key);      
-    }
-    
-    this.applyFilters();
+      if (params.has('maxprice')) {
+        this.selectedMaxPrice = +params.get('maxprice') || 0;
+      }
+    });
   }
 
-  onPriceSet(min, max){
-
-    var key = 'price';
-
-    if(min.value != "" && max.value != ""){//age ye filter entekhab shod 
-      if(min.value < max.value){
-        let index = this.filters.findIndex(i => i.key == key);
-        if(index != -1){//age filtere ba in key az ghabl vojood dasht
-          this.removeFilter(key);
-          }
-        this.filters.push({//ezafe kardane filtere jadid be araye filterha
-          key: key,
-          val: min.value + "*" + max.value
-        });
-      } 
-    }else{//age bardashtane filter entekhab shod 
-      this.removeFilter(key);      
-    }
-    this.applyFilters();
+  search() {
+    // searching based on selected filters
+    this.filteredApparels = this.apparels
+    .filter(x => this.setFilter(this.selectedDesigners, x.designer))
+    .filter(x => this.setFilter(this.selectedSizes, x.shape))
+    .filter(x => this.setPriceFilter(this.selectedMinPrice, this.selectedMaxPrice, x.price))
+    ;
   }
 
-  removeFilter(key: string) {
-    let index = this.filters.findIndex(i => i.key == key);
-    this.filters.splice(index, 1);
-  }
-
-  applyFilters(){
-    if(this.checkboxObservable != null){//age hade aghal yeki az checkboxa checked bood
-      this.filteredApparels = this.checkboxObservable;//emale filtere checkboxa
-    }else{
-      this.filteredApparels = this.apparels;
+  // returning true or false based on filter array values
+  setFilter(array: string[], value: string): boolean {
+    if (array.length > 0) {
+      return array.includes(value);
+    } else {
+      return true;
     }
-    if(this.filters.length != 0){//emale baghie filterha (hame be gheir az checkboxa)
-      this.filters.forEach(element => {
-        if(element.val.includes("*")){
-          var min = element.val.split("*")[0];
-          var max = element.val.split("*")[1];          
-          this.filteredApparels = this.filteredApparels.filter(x => x[element.key] >= min && x[element.key] <= max);
-        }else{
-          this.filteredApparels = this.filteredApparels.filter(x => x[element.key] == element.val);          
-        }
-      });
+  }
+  // returning true or false based on min and max values
+  setPriceFilter(min: number, max: number, value: number): boolean {
+    if (min === 0) {
+      min = undefined;
+    }
+    if (max === 0) {
+      max = undefined;
+    }
+    if (min !== undefined && max !== undefined && max > min) {
+      return min <= value && max >= value;
+    } else if (min !== undefined && max === undefined) {
+      return min <= value;
+    } else if (min === undefined && max !== undefined) {
+      return max >= value;
+    } else {
+      return true;
     }
   }
 
+  onSizeChanged(event) {
+    // managing size filter array
+    if (event.target.checked) {
+      this.selectedSizes.push(event.target.value);
+    } else {
+      this.selectedSizes.splice(this.selectedSizes.indexOf(event.target.value), 1);
+    }
+    // adding query parameters to url
+    if (this.selectedSizes.length > 0) {
+      // if at least one size has been selected then add them to query params
+      this.router.navigate([], {relativeTo: this.route, queryParams: {size: [this.selectedSizes], num: this.changesNum++},
+        queryParamsHandling: 'merge'});
+    } else {
+      // if no size has been selected then delete 'size' from query params
+      this.router.navigate([], {relativeTo: this.route, queryParams: {size: null, num: this.changesNum++},
+        queryParamsHandling: 'merge'});
+    }
+    // searching based on new filters
+    this.search();
+  }
+
+  onDesignerChanged(event) {
+    // managing designer filter array
+    if (event.target.checked) {
+      this.selectedDesigners.push(event.target.value);
+    } else {
+      this.selectedDesigners.splice(this.selectedDesigners.indexOf(event.target.value), 1);
+    }
+    // adding query parameters to url
+    if (this.selectedDesigners.length > 0) {
+      // if at least one designer has been selected then add them to query params
+      this.router.navigate([], {relativeTo: this.route, queryParams: {designer: [this.selectedDesigners], num: this.changesNum++},
+        queryParamsHandling: 'merge'});
+    } else {
+      // if no designer has been selected then delete 'designer' from query params
+      this.router.navigate([], {relativeTo: this.route, queryParams: {designer: null, num: this.changesNum++},
+        queryParamsHandling: 'merge'});
+    }
+    // searching based on new filters
+    this.search();
+  }
+
+  onPriceChanged(min, max) {
+    // managing min and max price
+    this.selectedMinPrice = +min.value;
+    this.selectedMaxPrice = +max.value;
+
+    // adding query parameters to url
+    if (this.selectedMinPrice !== 0 && this.selectedMaxPrice !== 0) {
+
+      this.router.navigate([], {relativeTo: this.route,
+      queryParams: {'minprice': this.selectedMinPrice, 'maxprice': this.selectedMaxPrice,
+      num: this.changesNum++}, queryParamsHandling: 'merge'});
+
+    } else if (this.selectedMinPrice !== 0 && this.selectedMaxPrice === 0) {
+
+      this.router.navigate([], {relativeTo: this.route,
+      queryParams: {'minprice': this.selectedMinPrice, 'maxprice': null,
+      num: this.changesNum++}, queryParamsHandling: 'merge'});
+
+    } else if (this.selectedMinPrice === 0 && this.selectedMaxPrice !== 0) {
+
+      this.router.navigate([], {relativeTo: this.route,
+      queryParams: {'minprice': null, 'maxprice': this.selectedMaxPrice,
+      num: this.changesNum++}, queryParamsHandling: 'merge'});
+
+    }
+    // searching based on new filters
+    this.search();
+   }
 }
 

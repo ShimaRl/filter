@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import {FormsModule} from '@angular/forms'
+import {FormsModule} from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { ApparelComponent } from './apparel/apparel.component';
@@ -10,6 +10,7 @@ import { AngularFireModule } from '@angular/fire';
 import { FirebaseConfig } from '../environments/firebase.config';
 import { AngularFireDatabase } from '@angular/fire/database-deprecated';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
+import { AppRoutingModule } from './app-router.module';
 
 
 @NgModule({
@@ -22,7 +23,8 @@ import { AngularFireDatabaseModule } from '@angular/fire/database';
     FormsModule,
     AngularFireModule.initializeApp(FirebaseConfig.firebase),
     AngularFirestoreModule,
-    AngularFireDatabaseModule
+    AngularFireDatabaseModule,
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]

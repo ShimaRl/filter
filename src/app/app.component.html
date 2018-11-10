@@ -4,32 +4,20 @@
 
           <h5>size</h5>
           <div id="shape">
-              <div class="form-check">
+              <div class="form-check" *ngFor = "let a of sizes">
                   <label class="form-check-label">
-                    <input type="checkbox" class="form-check-input" (change)="onCheckboxChanged($event)" value="small">small
-                  </label>
-                </div>
-                <div class="form-check">
-                  <label class="form-check-label">
-                    <input type="checkbox" class="form-check-input" (change)="onCheckboxChanged($event)" value="medium">medium
-                  </label>
-                </div>
-                <div class="form-check">
-                  <label class="form-check-label">
-                    <input type="checkbox" class="form-check-input" (change)="onCheckboxChanged($event)" value="large">large
+                    <input type="checkbox" class="form-check-input" (change)="onSizeChanged($event)" value="{{a}}">{{a}}
                   </label>
                 </div>
           </div>
 
-          <h5 class="mt-2">Designer</h5>
-          <div class="form-group">
-              <select class="form-control" id="designer" (change)="onDropdownChanged($event)">
-                <option></option>
-                <option>Ralph Lauren</option>
-                <option>Gucci</option>
-                <option>Gap</option>
-                <option>Nike</option>
-              </select>
+          <h5>Designer</h5>
+          <div id="designer">
+              <div class="form-check" *ngFor="let b of designers">
+                  <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" (change)="onDesignerChanged($event)" value="{{b}}">{{b}}
+                  </label>
+                </div>
           </div>
 
           <h5 class="mt-2" id="price">Price</h5>
@@ -41,7 +29,7 @@
               <input type="number" class="form-control" #max>
             </div>
             <div class="col-md-4">
-              <button type="button" class="btn btn-outline-primary" (click)="onPriceSet(min, max)">set</button>
+              <button type="button" class="btn btn-outline-primary" (click)="onPriceChanged(min, max)">set</button>
             </div>
           </div>
         </div>
