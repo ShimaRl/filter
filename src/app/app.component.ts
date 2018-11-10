@@ -22,8 +22,9 @@ export class AppComponent implements OnInit {
   filteredApparels: any;
 
   // filter array
-  sizes = ['small', 'medium' , 'large'];
-designers = ['ralph', 'gap', 'nike', 'gucci'];
+  sizes = ['small', 'medium', 'large'];
+  designers = ['Ralph Lauren', 'Gap', 'Nike', 'Gucci'];
+
   // filter arrays
   selectedDesigners: string[] = []; // array of checked disigners
   selectedSizes: string[] = []; // array of checked sizes
